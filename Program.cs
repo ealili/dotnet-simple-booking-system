@@ -10,6 +10,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+
+var allowedOrigin = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+// Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("myAppCors", policy =>
+    {
+        policy.WithOrigins(allowedOrigin)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // builder.Services.AddControllers();
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
@@ -57,6 +71,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("myAppCors");
 
 app.UseAuthorization();
 
