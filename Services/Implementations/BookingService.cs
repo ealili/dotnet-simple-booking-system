@@ -17,4 +17,16 @@ public class BookingService: IBookingService
     {
         return await _bookingRepository.GetAllAsync(); 
     }
+
+    public async Task<Booking> GetByIdAsync(int id)
+    {
+        var booking = await _bookingRepository.GetByIdAsync(id);
+        return booking;
+    }
+
+    public async Task AddAsync(Booking entity)
+    {
+        await _bookingRepository.AddAsync(entity);
+        await _bookingRepository.SaveChangesAsync();
+    }
 }

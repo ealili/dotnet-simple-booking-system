@@ -10,16 +10,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<DataContext>(options =>
-{
-    // options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-    options.UseInMemoryDatabase("InMemoryDatabase");
-});
+
+builder.Services.AddDbContext<DataContext>(options => { options.UseInMemoryDatabase("InMemoryDatabase"); });
 
 
 builder.Services.AddScoped<IResourceService, ResourceService>();
@@ -37,30 +39,11 @@ using (var scope = app.Services.CreateScope())
     if (!dbContext.Resources.Any())
     {
         dbContext.Resources.AddRange(
-            new Resource { Name = "Resource1", Quantity = 1 },
-            new Resource { Name = "Resource2", Quantity = 5 },
-            new Resource { Name = "Resource3", Quantity = 2 }
-        );
-        dbContext.SaveChanges();
-    }
-    
-    
-    if (!dbContext.Bookings.Any())
-    {
-        dbContext.Bookings.AddRange(
-            new Booking
-            {
-                FromDateTime = DateTime.UtcNow,
-                ToDateTime = DateTime.UtcNow.AddHours(2),
-                BookedQuantity = 5
-            },
-            new Booking
-            {
-                FromDateTime = DateTime.UtcNow.AddDays(1),
-                ToDateTime = DateTime.UtcNow.AddDays(1).AddHours(3),
-                BookedQuantity = 8
-            }
-            // Add more bookings as needed
+            new Resource { Name = "Resource 1", Quantity = 1 },
+            new Resource { Name = "Resource 2", Quantity = 5 },
+            new Resource { Name = "Resource 3", Quantity = 200 },
+            new Resource { Name = "Resource 4", Quantity = 15 },
+            new Resource { Name = "Resource 5", Quantity = 20 }
         );
         dbContext.SaveChanges();
     }

@@ -21,6 +21,28 @@ public class BookingRepository: IBookingRepository
 
     public async Task<IEnumerable<Booking>> GetAllAsync()
     {
-        return await _context.Bookings.ToListAsync();
+        return await _context.Bookings
+            .Include(b => b.Resource)
+            .ToListAsync();
+    }
+
+
+    public async Task<Booking> GetByIdAsync(int id)
+    {
+        var booking = await _context.Bookings.FindAsync(id);
+        return booking;
+    }
+
+    public async Task AddAsync(Booking booking)
+    {
+        await _context.Bookings.AddAsync(booking);
+    }
+
+    public async Task<List<Booking>> GetBookingsForResourceInDateRange(int resourceId, DateTime fromDate, DateTime toDate)
+    {
+        return await _context.Bookings
+        .Where(b => b.ResourceId == resourceId &&
+                    (fromDate <= b.ToDateTime && toDate >= b.FromDateTime))
+        .ToListAsync();
     }
 }

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using SimpleBookingSystem.Models;
 using SimpleBookingSystem.Services.Interfaces;
+using SimpleBookingSystem.Utilities.Helpers;
 
 namespace SimpleBookingSystem.Controllers;
 
@@ -18,7 +20,9 @@ public class ResourcesController: ControllerBase
     public async Task<IActionResult> GetResources()
     {
         var resources = await _resourceService.GetAllAsync();
+        
+        var response = new ApiResponse<IEnumerable<Resource>>(false, "Data retrieved successfully.", resources);
 
-        return Ok(resources);
+        return Ok(response);
     }
 }

@@ -23,4 +23,15 @@ public class ResourceRepository: IResourceRepository
     {
         return await _context.Resources.ToListAsync();
     }
+    
+    public async Task<Resource> GetByIdAsync(int id)
+    {
+        var resource = await _context.Resources.FindAsync(id);
+        return resource;
+    }
+
+    public Task AddAsync(Resource entity)
+    {
+        throw new NotImplementedException();
+    }
 }

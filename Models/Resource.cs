@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace SimpleBookingSystem.Models;
 
@@ -9,5 +10,6 @@ public class Resource
     public string Name { get; set; }
     public int Quantity { get; set; }
     
-    public ICollection<Booking> Bookings { get; set; }
+    [JsonIgnore]
+    public IEnumerable<Booking> Bookings { get; set; }
 }
