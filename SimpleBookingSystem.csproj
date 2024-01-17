@@ -18,4 +18,8 @@
     <Folder Include="Exceptions\Booking\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include=".github\workflows\main.yml" />
+  </ItemGroup>
+
 </Project>
