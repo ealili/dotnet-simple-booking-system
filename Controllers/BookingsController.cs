@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBookingSystem.DTOs;
 using SimpleBookingSystem.Models;
@@ -23,13 +25,28 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> GetAllBookings()
     {
         var bookings = await _bookingService.GetAllAsync();
+        
+        var response = new ApiResponse<IEnumerable<Booking>>(false, "Data retrieved successfully.", bookings);
 
-        return Ok(bookings);
+        return Ok(response);
     }
 
     [HttpPost]
-    public async Task< IActionResult> CreateBooking([FromBody]BookingDto bookingDto)
+    public async Task< IActionResult> CreateBooking(IValidator<BookingDto> validator, BookingDto bookingDto)
     {
+        var validationResult = await validator.ValidateAsync(bookingDto);
+        
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors
+                .GroupBy(x => x.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.ErrorMessage).ToArray()
+                );
+            return BadRequest(errors);
+        }
+        
         try
         {
             var resourceIsAvailable =  await _resourceService.IsResourceAvailable(bookingDto.ResourceId,
@@ -51,7 +68,7 @@ public class BookingsController : ControllerBase
             };
 
             await _bookingService.AddAsync(booking);
-            var response = new ApiResponse<Booking>(true, "Created.", booking);
+            var response = new ApiResponse<Booking>(true, "Booking created successfully.", booking);
             return Ok(response);
         }
         catch (Exception exception)

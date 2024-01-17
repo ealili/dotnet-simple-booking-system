@@ -1,5 +1,7 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SimpleBookingSystem.Data;
+using SimpleBookingSystem.DTOs;
 using SimpleBookingSystem.Models;
 using SimpleBookingSystem.Repositories.Implementations;
 using SimpleBookingSystem.Repositories.Interfaces;
@@ -25,6 +27,9 @@ builder.Services.AddCors(options =>
 });
 
 // builder.Services.AddControllers();
+
+builder.Services.AddScoped<IValidator<BookingDto>, BookingDtoValidator>();
+
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
