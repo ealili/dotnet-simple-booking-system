@@ -7,6 +7,7 @@ using SimpleBookingSystem.Repositories.Implementations;
 using SimpleBookingSystem.Repositories.Interfaces;
 using SimpleBookingSystem.Services.Implementations;
 using SimpleBookingSystem.Services.Interfaces;
+using SimpleBookingSystem.Utilities.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,14 +40,15 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddDbContext<DataContext>(options => { options.UseInMemoryDatabase("InMemoryDatabase"); });
-
 
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddTransient<IMailService, MailService>();
 
 var app = builder.Build();
 
