@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SimpleBookingSystem.Data;
 using SimpleBookingSystem.DTOs;
+using SimpleBookingSystem.Infrastructure;
 using SimpleBookingSystem.Models;
 using SimpleBookingSystem.Repositories.Implementations;
 using SimpleBookingSystem.Repositories.Interfaces;
@@ -13,19 +14,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-
 var allowedOrigin = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
-
-// Add services to the container.
-builder.Services.AddCors(options =>
+if (allowedOrigin != null)
 {
-    options.AddPolicy("myAppCors", policy =>
+    builder.Services.AddCors(options =>
     {
-        policy.WithOrigins(allowedOrigin)
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        options.AddPolicy("myAppCors", policy =>
+        {
+            policy.WithOrigins(allowedOrigin)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
     });
-});
+}
 
 // builder.Services.AddControllers();
 
@@ -49,6 +50,14 @@ builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddTransient<IMailService, MailService>();
+
+
+builder.Services.AddExceptionHandler<FluentValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<BadRequestExceptionHandler>();
+builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 
 var app = builder.Build();
 
@@ -80,6 +89,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("myAppCors");
+
+app.UseExceptionHandler();
 
 app.UseAuthorization();
 

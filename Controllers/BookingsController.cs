@@ -1,5 +1,4 @@
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBookingSystem.DTOs;
 using SimpleBookingSystem.Models;
@@ -25,56 +24,32 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> GetAllBookings()
     {
         var bookings = await _bookingService.GetAllAsync();
-        
+
         var response = new ApiResponse<IEnumerable<Booking>>(false, "Data retrieved successfully.", bookings);
 
         return Ok(response);
     }
 
     [HttpPost]
-    public async Task< IActionResult> CreateBooking(IValidator<BookingDto> validator, BookingDto bookingDto)
+    public async Task<IActionResult> CreateBooking([FromServices] IValidator<BookingDto> validator,
+        BookingDto bookingDto)
     {
-        var validationResult = await validator.ValidateAsync(bookingDto);
-        
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors
-                .GroupBy(x => x.PropertyName)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(x => x.ErrorMessage).ToArray()
-                );
-            return BadRequest(errors);
-        }
-        
-        try
-        {
-            var resourceIsAvailable =  await _resourceService.IsResourceAvailable(bookingDto.ResourceId,
-                bookingDto.FromDateTime, bookingDto.ToDateTime,
-                bookingDto.BookedQuantity);
-            
-            if (!resourceIsAvailable)
-            {
-                var errorResponse = new ApiResponse<string>(false, "Not enough resource quantity.");
-                return BadRequest(errorResponse);
-            }
+        await validator.ValidateAndThrowAsync(bookingDto);
 
-            var booking = new Booking
-            {
-                FromDateTime = bookingDto.FromDateTime,
-                ToDateTime = bookingDto.ToDateTime,
-                BookedQuantity = bookingDto.BookedQuantity,
-                ResourceId = bookingDto.ResourceId
-            };
+        await _resourceService.CheckIfResourceIsAvailable(bookingDto.ResourceId,
+            bookingDto.FromDateTime, bookingDto.ToDateTime,
+            bookingDto.BookedQuantity);
 
-            await _bookingService.AddAsync(booking);
-            var response = new ApiResponse<Booking>(true, "Booking created successfully.", booking);
-            return Ok(response);
-        }
-        catch (Exception exception)
+        var booking = new Booking
         {
-            var errorResponse = new ApiResponse<string>(false, exception.Message);
-            return BadRequest(errorResponse);
-        }
+            FromDateTime = bookingDto.FromDateTime,
+            ToDateTime = bookingDto.ToDateTime,
+            BookedQuantity = bookingDto.BookedQuantity,
+            ResourceId = bookingDto.ResourceId
+        };
+
+        await _bookingService.AddAsync(booking);
+        var response = new ApiResponse<Booking>(true, "Booking created successfully.", booking);
+        return Ok(response);
     }
 }

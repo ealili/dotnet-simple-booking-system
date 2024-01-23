@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SimpleBookingSystem.Data;
+using SimpleBookingSystem.Exceptions.Resource;
 using SimpleBookingSystem.Models;
 using SimpleBookingSystem.Repositories.Interfaces;
 
@@ -26,7 +27,13 @@ public class ResourceRepository: IResourceRepository
     
     public async Task<Resource> GetByIdAsync(int id)
     {
+        
         var resource = await _context.Resources.FindAsync(id);
+       
+        if (resource == null)
+        {
+            throw new ResourceNotFoundException();
+        }
         return resource;
     }
 

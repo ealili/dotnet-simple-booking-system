@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SimpleBookingSystem.Data;
+using SimpleBookingSystem.Exceptions.Booking;
 using SimpleBookingSystem.Models;
 using SimpleBookingSystem.Repositories.Interfaces;
 
@@ -30,6 +31,11 @@ public class BookingRepository: IBookingRepository
     public async Task<Booking> GetByIdAsync(int id)
     {
         var booking = await _context.Bookings.FindAsync(id);
+
+        if (booking == null)
+        {
+            throw new BookingNotFoundException();
+        }
         return booking;
     }
 

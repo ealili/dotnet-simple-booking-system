@@ -24,14 +24,7 @@ public class ResourceService : IResourceService
 
     public async Task<Resource> GetByIdAsync(int id)
     {
-        var resource = await _resourceRepository.GetByIdAsync(id);
-
-        if (resource == null)
-        {
-            throw new ResourceNotFoundException();
-        }
-
-        return resource;
+        return await _resourceRepository.GetByIdAsync(id);
     }
 
     public Task AddAsync(Resource entity)
@@ -39,7 +32,7 @@ public class ResourceService : IResourceService
         throw new NotImplementedException();
     }
 
-    public async Task<bool> IsResourceAvailable(int resourceId, DateTime fromDate, DateTime toDate,
+    public async Task CheckIfResourceIsAvailable(int resourceId, DateTime fromDate, DateTime toDate,
         int requestedQuantity)
     {
         var resource = await GetByIdAsync(resourceId);
@@ -56,7 +49,7 @@ public class ResourceService : IResourceService
         // If there are no conflicting bookings, return true directly
         if (conflictingBookings.Count == 0)
         {
-            return true;
+            return;
         }
 
         // Calculate the available quantity for the requested period
@@ -65,8 +58,12 @@ public class ResourceService : IResourceService
         // Calculate available quantity by subtracting booked quantities during the chosen time window
         availableQuantity -= conflictingBookings.Where(b => b.FromDateTime >= fromDate && b.ToDateTime <= toDate)
             .Sum(b => b.BookedQuantity);
-
+        
         // Check if the available quantity is sufficient for the requested booking
-        return availableQuantity >= requestedQuantity;
+        // If available quantity is still less than requested quantity, throw exception again
+        if (!(availableQuantity >= requestedQuantity))
+        {
+            throw new NotSufficientResourceQuantityException($"Not sufficient resource quantity. Available at the moment are  {availableQuantity}.");
+        }
     }
 }
